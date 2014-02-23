@@ -28,6 +28,7 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
     m_statusBar->setValue(0);
 
     QLabel *label = new QLabel(this);
+    label->setMaximumHeight(20);
     label->setText("A Chromium Updater written in Qt. (c)2014 ZH");
 
     vLayout->insertLayout(0,hLayout);
@@ -70,8 +71,7 @@ void ChromiumUpdaterWidget::versionQueried()
     {
         if (version > last_version)
         {
-            m_setting->setValue("Version",version);
-            m_statusBar->setFormat("Version: " + QString::number(version));
+            m_statusBar->setFormat("New Version: " + QString::number(version));
             m_downloadButton->setEnabled(true);
         }
         else
@@ -94,6 +94,7 @@ void ChromiumUpdaterWidget::checkClicked()
 void ChromiumUpdaterWidget::downloadClicked()
 {
     m_checkButton->setEnabled(false);
+    m_downloadButton->setEnabled(false);
     m_updater.downloadInstaller();
 }
 
@@ -109,6 +110,11 @@ void ChromiumUpdaterWidget::install()
     QString filepath;
     filepath = m_updater.installerPath();
     m_checkButton->setEnabled(true);
+    m_downloadButton->setEnabled(false);
     m_statusBar->setFormat("Silent Installation in background. You can now close the updater. " + filepath);
     //actual installation
+
+    //assume installation starts ok.
+    m_setting->setValue("Version",m_updater.version());
+
 }
