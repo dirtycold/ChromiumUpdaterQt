@@ -22,13 +22,16 @@ public:
     ~ChromiumUpdaterWidget();
 
 signals:
+    void readyToInstall();
 
 public slots:
     void versionQueried();
     void checkClicked();
     void downloadClicked();
-    void process(qint64 , qint64 );
+    void downloadProgress(qint64 , qint64 );
+    void downloadComplete();
     void install();
+    void installComplete(int code);
 
 private:
     ChromiumUpdater m_updater;

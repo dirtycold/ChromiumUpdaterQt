@@ -16,6 +16,7 @@
 #include <QtNetwork/QSslConfiguration>
 #include <QFile>
 #include <QFileInfo>
+#include <QProcess>
 
 class ChromiumUpdater : public QObject
 {
@@ -25,9 +26,12 @@ public:
         :QObject(parent)
     {
         m_versionQueried = false;
+        connect(&m_installer,SIGNAL(finished(int)),this,SIGNAL(installComplete(int)));
     }
     ChromiumUpdater::~ChromiumUpdater()
     {
+       // m_installer.waitForFinished();
+        m_installer.kill();
     }
 
     enum Action{ QueryVersion, DownloadInstaller};
@@ -38,6 +42,8 @@ public:
 signals:
     void versionQueried();
     void installerDownloaded();
+    void installComplete(int);
+    void installAborted();
     void downloadProgress(qint64,qint64);
 
 public slots:
@@ -70,9 +76,17 @@ public slots:
         QSslConfiguration config = QSslConfiguration::defaultConfiguration();
         config.setProtocol(QSsl::AnyProtocol);
         request.setSslConfiguration(config);
-        reply = m_accessManager.get(request);
-        connect(reply,SIGNAL(downloadProgress(qint64,qint64)),this,SIGNAL(downloadProgress(qint64,qint64)));
-        connect(reply,SIGNAL(finished()),this,SLOT(extractInstaller()));
+        m_reply = m_accessManager.get(request);
+        connect(m_reply,SIGNAL(downloadProgress(qint64,qint64)),this,SIGNAL(downloadProgress(qint64,qint64)));
+        connect(m_reply,SIGNAL(finished()),this,SLOT(extractInstaller()));
+    }
+
+    void install()
+    {
+        if ((m_baseUrlSet && m_versionQueried) && m_installerDownloaded)
+        {
+            m_installer.start(m_filepath);
+        }
     }
 
     bool hasVersionQueried()
@@ -91,6 +105,12 @@ public slots:
     QString installerPath()
     {
         return m_filepath;
+    }
+
+    bool installerExists()
+    {
+        QFileInfo fileinfo(m_filepath);
+        return fileinfo.exists();
     }
 
     void setBaseUrl(QString baseUrl)
@@ -114,23 +134,27 @@ private slots:
         reply->deleteLater();
         m_version = version;
         m_versionQueried = true;
+
+        //determine installer file name and path
+        QFile file("chromium_mini_installer_"+ QString::number(version) + ".exe");
+        QFileInfo fileinfo(file);
+        m_filepath = fileinfo.absoluteFilePath();
         disconnect(&m_accessManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(extractVersion(QNetworkReply*)));
         emit versionQueried();
     }
 
     void extractInstaller()
     {
-        QFile file("chromium_mini_installer_"+ QString::number(version()) + ".exe");
+        QFile file(m_filepath);
         if (!file.open(QIODevice::WriteOnly))
             return;
-        file.write(reply->readAll());
+        file.write(m_reply->readAll());
         file.close();
-        reply->deleteLater();
-        QFileInfo fileinfo(file);
-        m_filepath = fileinfo.absoluteFilePath();
-        disconnect(reply,SIGNAL(downloadProgress(qint64,qint64)),this,SIGNAL(downloadProgress(qint64,qint64)));
-        disconnect(reply,SIGNAL(finished()),this,SLOT(extractInstaller()));
+        m_reply->deleteLater();
+        disconnect(m_reply,SIGNAL(downloadProgress(qint64,qint64)),this,SIGNAL(downloadProgress(qint64,qint64)));
+        disconnect(m_reply,SIGNAL(finished()),this,SLOT(extractInstaller()));
         emit installerDownloaded();
+        m_installerDownloaded = true;
     }
 
     QString getPlatformString()
@@ -165,7 +189,8 @@ private slots:
 
 private:
     QNetworkAccessManager m_accessManager;
-    QNetworkReply *reply;
+    QNetworkReply *m_reply;
+    QProcess m_installer;
     QString m_baseUrl;
     Platform m_platform;
     Protocol m_protocol;
@@ -173,6 +198,7 @@ private:
     unsigned int m_version;
     bool m_versionQueried;
     bool m_baseUrlSet;
+    bool m_installerDownloaded;
     QString m_filepath;
 };
 

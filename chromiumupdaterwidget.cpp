@@ -50,8 +50,10 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
     connect(m_checkButton,SIGNAL(clicked()),this,SLOT(checkClicked()));
     connect(&m_updater,SIGNAL(versionQueried()),this,SLOT(versionQueried()));
     connect(m_downloadButton,SIGNAL(clicked()),this,SLOT(downloadClicked()));
-    connect(&m_updater,SIGNAL(downloadProgress(qint64,qint64)),this,SLOT(process(qint64,qint64)));
-    connect(&m_updater,SIGNAL(installerDownloaded()),this,SLOT(install()));
+    connect(&m_updater,SIGNAL(downloadProgress(qint64,qint64)),this,SLOT(downloadProgress(qint64,qint64)));
+    connect(&m_updater,SIGNAL(installerDownloaded()),this,SLOT(downloadComplete()));
+    connect(&m_updater,SIGNAL(installComplete(int)),this,SLOT(installComplete(int)));
+    connect(this,SIGNAL(readyToInstall()),this,SLOT(install()));
 }
 
 ChromiumUpdaterWidget::~ChromiumUpdaterWidget()
@@ -74,6 +76,11 @@ void ChromiumUpdaterWidget::versionQueried()
             m_statusBar->setFormat("New Version: " + QString::number(version));
             m_downloadButton->setEnabled(true);
         }
+        else if (version == last_version)
+        {
+            m_statusBar->setFormat("Lastest installer exists. Ready to re-install.");
+            m_downloadButton->setEnabled(true);
+        }
         else
         {
             m_statusBar->setFormat("No newer version available.");
@@ -93,28 +100,55 @@ void ChromiumUpdaterWidget::checkClicked()
 
 void ChromiumUpdaterWidget::downloadClicked()
 {
+    unsigned int version = m_updater.version();
+    unsigned int last_version = m_setting->value("Version").toUInt();
+    if ((version == last_version) && m_updater.installerExists())
+    {
+        emit readyToInstall();
+        return;
+    }
+
     m_checkButton->setEnabled(false);
     m_downloadButton->setEnabled(false);
     m_updater.downloadInstaller();
 }
 
-void ChromiumUpdaterWidget::process(qint64 current, qint64 total)
+void ChromiumUpdaterWidget::downloadProgress(qint64 current, qint64 total)
 {
     int percent = current * 100 / total;
     m_statusBar->setFormat("Download in progress: " + QString::number(percent) + "%");
     m_statusBar->setValue(percent);
 }
 
-void ChromiumUpdaterWidget::install()
+void ChromiumUpdaterWidget::downloadComplete()
 {
-    QString filepath;
-    filepath = m_updater.installerPath();
     m_checkButton->setEnabled(true);
     m_downloadButton->setEnabled(false);
-    m_statusBar->setFormat("Silent Installation in background. You can now close the updater. " + filepath);
-    //actual installation
+    m_statusBar->setFormat("Download complete.");
+    emit readyToInstall();
+}
 
-    //assume installation starts ok.
-    m_setting->setValue("Version",m_updater.version());
+void ChromiumUpdaterWidget::install()
+{
+    m_checkButton->setEnabled(false);
+    m_downloadButton->setEnabled(false);
 
+    m_statusBar->setTextVisible(true);
+    m_statusBar->setFormat("Installation in progress.");
+    m_statusBar->setRange(0,0); // show busy indicator.
+    m_updater.install();
+}
+
+void ChromiumUpdaterWidget::installComplete(int code)
+{
+    if (code == 0)
+    {
+        m_checkButton->setEnabled(true);
+        m_downloadButton->setEnabled(true);
+        //assume installation ok.
+        m_statusBar->setFormat("Installation complete.");
+        m_statusBar->setRange(0,100);
+        m_statusBar->setValue(100);
+        m_setting->setValue("Version",m_updater.version());
+    }
 }
