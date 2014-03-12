@@ -32,12 +32,14 @@ public slots:
     void downloadComplete();
     void install();
     void installComplete(int code);
+    void copyUrl();
 
 private:
     ChromiumUpdater m_updater;
 
     QPushButton *m_checkButton;
     QPushButton *m_downloadButton;
+    QPushButton *m_urlButton;
     QProgressBar *m_statusBar;
 
     QSettings *m_setting;

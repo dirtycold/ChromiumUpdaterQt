@@ -8,6 +8,10 @@
 
 #include <QLayout>
 #include <QLabel>
+#include <QClipboard>
+#include <QApplication>
+#include <QStyle>
+#include <QSizePolicy>
 
 ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
     QWidget(parent)
@@ -17,10 +21,20 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
 
     m_checkButton = new QPushButton("Check Version",this);
     m_downloadButton = new QPushButton ("Download and Install",this);
+    m_urlButton = new QPushButton("",this);
     m_downloadButton->setEnabled(false);
+    m_urlButton->setEnabled(false);
+    m_checkButton->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));
+    m_downloadButton->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogApplyButton)));
+    m_urlButton->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogSaveButton)));
+    m_checkButton->setToolTip("Check for new version");
+    m_downloadButton->setToolTip("Download and install");
+    m_urlButton->setToolTip("Copy source url");
+    m_urlButton->setFixedWidth(24);
 
     hLayout->addWidget(m_checkButton);
     hLayout->addWidget(m_downloadButton);
+    hLayout->addWidget(m_urlButton);
 
     m_statusBar = new QProgressBar(this);
     m_statusBar->setAlignment(Qt::AlignCenter);
@@ -54,6 +68,7 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
     connect(&m_updater,SIGNAL(installerDownloaded()),this,SLOT(downloadComplete()));
     connect(&m_updater,SIGNAL(installComplete(int)),this,SLOT(installComplete(int)));
     connect(this,SIGNAL(readyToInstall()),this,SLOT(install()));
+    connect(m_urlButton,SIGNAL(clicked()),this,SLOT(copyUrl()));
 }
 
 ChromiumUpdaterWidget::~ChromiumUpdaterWidget()
@@ -61,6 +76,7 @@ ChromiumUpdaterWidget::~ChromiumUpdaterWidget()
     m_setting->sync();
     delete m_checkButton;
     delete m_downloadButton;
+    delete m_urlButton;
     delete m_statusBar;
     delete m_setting;
 }
@@ -85,6 +101,7 @@ void ChromiumUpdaterWidget::versionQueried()
         {
             m_statusBar->setFormat("No newer version available.");
         }
+        m_urlButton->setEnabled(true);
     }
     else
     {
@@ -95,6 +112,7 @@ void ChromiumUpdaterWidget::versionQueried()
 void ChromiumUpdaterWidget::checkClicked()
 {
     m_downloadButton->setEnabled(false);
+    m_urlButton->setEnabled(false);
     m_updater.queryVersion();
 }
 
@@ -151,4 +169,10 @@ void ChromiumUpdaterWidget::installComplete(int code)
         m_statusBar->setValue(100);
         m_setting->setValue("Version",m_updater.version());
     }
+}
+
+void ChromiumUpdaterWidget::copyUrl()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(m_updater.installerUrl());
 }

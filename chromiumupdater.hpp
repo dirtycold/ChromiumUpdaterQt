@@ -34,7 +34,6 @@ public:
         m_installer.kill();
     }
 
-    enum Action{ QueryVersion, DownloadInstaller};
     enum Platform{ Win32, Win64};
     enum Protocol{ Http, Https};
 
@@ -70,8 +69,7 @@ public slots:
     {
         if (!hasVersionQueried())
             return;
-        QString urlString = getProtocolString() + "://" + m_baseUrl + "/" + getPlatformString() + "/" + QString::number(version()) + "/" + "mini_installer.exe";
-        QUrl url(urlString);
+        QUrl url(m_url);
         QNetworkRequest request(url);
         QSslConfiguration config = QSslConfiguration::defaultConfiguration();
         config.setProtocol(QSsl::AnyProtocol);
@@ -107,6 +105,11 @@ public slots:
         return m_filepath;
     }
 
+    QString installerUrl()
+    {
+        return m_url;
+    }
+
     bool installerExists()
     {
         QFileInfo fileinfo(m_filepath);
@@ -139,6 +142,7 @@ private slots:
         QFile file("chromium_mini_installer_"+ QString::number(version) + ".exe");
         QFileInfo fileinfo(file);
         m_filepath = fileinfo.absoluteFilePath();
+        m_url = getProtocolString() + "://" + m_baseUrl + "/" + getPlatformString() + "/" + QString::number(version) + "/" + "mini_installer.exe";
         disconnect(&m_accessManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(extractVersion(QNetworkReply*)));
         emit versionQueried();
     }
@@ -200,6 +204,7 @@ private:
     bool m_baseUrlSet;
     bool m_installerDownloaded;
     QString m_filepath;
+    QString m_url;
 };
 
 #endif // CHROMIUMUPDATER_H
