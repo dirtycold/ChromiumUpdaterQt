@@ -87,20 +87,49 @@ void ChromiumUpdaterWidget::versionQueried()
     unsigned int last_version = m_setting->value("Version").toUInt();
     if (version != 0)
     {
-        if (version > last_version)
+        if (m_updater.installerExists())
         {
-            m_statusBar->setFormat("New Version: " + QString::number(version));
-            m_downloadButton->setEnabled(true);
-        }
-        else if (version == last_version)
-        {
-            m_statusBar->setFormat("Lastest installer exists. Ready to re-install.");
-            m_downloadButton->setEnabled(true);
+            if (version > last_version)
+            {
+                // direct install
+                m_statusBar->setFormat("Downloaded new version: " + QString::number(version) + ". Ready to install.");
+                m_downloadButton->setEnabled(true);
+            }
+            else if (version == last_version)
+            {
+                // re-install
+                m_statusBar->setFormat("Installed version: " + QString::number(version) + ". Ready to re-install.");
+                m_downloadButton->setEnabled(true);
+            }
+            else // version < last_version
+            {
+                // install older version
+                m_statusBar->setFormat("Old version: " + QString::number(version) + ". Check url or proceed to install older version.");
+                m_downloadButton->setEnabled(true);
+            }
         }
         else
         {
-            m_statusBar->setFormat("No newer version available.");
+            if (version > last_version)
+            {
+                // fresh install
+                m_statusBar->setFormat("New version: " + QString::number(version) + ". Ready to download.");
+                m_downloadButton->setEnabled(true);
+            }
+            else if (version == last_version)
+            {
+                // re-download
+                m_statusBar->setFormat("Installed version: " + QString::number(version) + ". Ready to re-download.");
+                m_downloadButton->setEnabled(true);
+            }
+            else // version < last_version
+            {
+                // download older version
+                m_statusBar->setFormat("Old version: " + QString::number(version) + ". Check url or proceed to download older version.");
+                m_downloadButton->setEnabled(true);
+            }
         }
+
         m_urlButton->setEnabled(true);
     }
     else
@@ -118,9 +147,7 @@ void ChromiumUpdaterWidget::checkClicked()
 
 void ChromiumUpdaterWidget::downloadClicked()
 {
-    unsigned int version = m_updater.version();
-    unsigned int last_version = m_setting->value("Version").toUInt();
-    if ((version == last_version) && m_updater.installerExists())
+    if ( m_updater.installerExists())
     {
         emit readyToInstall();
         return;
