@@ -26,9 +26,10 @@ public:
         :QObject(parent)
     {
         m_versionQueried = false;
+        m_baseUrlSet = false;
         connect(&m_installer,SIGNAL(finished(int)),this,SIGNAL(installComplete(int)));
     }
-    ChromiumUpdater::~ChromiumUpdater()
+    ~ChromiumUpdater()
     {
        // m_installer.waitForFinished();
         m_installer.kill();
@@ -119,6 +120,8 @@ public slots:
     void setBaseUrl(QString baseUrl)
     {
         m_baseUrl = baseUrl;
+        if (!m_baseUrl.isEmpty())
+            m_baseUrlSet = true;
     }
     void setPlatform(Platform platform)
     {
@@ -165,10 +168,10 @@ private slots:
     {
         QString platformString;
         switch (m_platform) {
+        default:
         case Win32:
             platformString = "Win";
             break;
-        default:
         case Win64:
             platformString = "Win_x64";
             break;
@@ -180,12 +183,12 @@ private slots:
     {
         QString protocolString;
         switch (m_protocol) {
-        case Http:
-            protocolString = "http";
-            break;
         default:
         case Https:
             protocolString = "https";
+            break;
+        case Http:
+            protocolString = "http";
             break;
         }
         return protocolString;

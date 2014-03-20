@@ -57,9 +57,16 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
         m_setting->setValue("Version",0);
     if (!m_setting->contains("BaseUrl"))
         m_setting->setValue("BaseUrl","commondatastorage.googleapis.com/chromium-browser-continuous");
+    if (!m_setting->contains("Platform"))
+        m_setting->setValue("Platform","Win32");
+    if (!m_setting->contains("Protocol"))
+        m_setting->setValue("Protocol","Https");
 
     m_baseUrl = m_setting->value("BaseUrl").toString();
     m_updater.setBaseUrl(m_baseUrl);
+
+    m_updater.setPlatform(ChromiumUpdater::Win32);
+    m_updater.setProtocol(ChromiumUpdater::Https);
 
     connect(m_checkButton,SIGNAL(clicked()),this,SLOT(checkClicked()));
     connect(&m_updater,SIGNAL(versionQueried()),this,SLOT(versionQueried()));
