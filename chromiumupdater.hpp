@@ -30,6 +30,7 @@ public:
         m_baseUrlSet = false;
         connect(&m_installer,SIGNAL(finished(int)),this,SIGNAL(installComplete(int)));
     }
+
     ~ChromiumUpdater()
     {
        // m_installer.waitForFinished();
@@ -38,7 +39,6 @@ public:
 
     enum Platform{ Win32, Win64};
     enum Protocol{ Http, Https};
-
 
 signals:
     void versionQueried();
@@ -64,9 +64,10 @@ public slots:
         QSslConfiguration config = QSslConfiguration::defaultConfiguration();
         config.setProtocol(QSsl::AnyProtocol);
         request.setSslConfiguration(config);
-        QList<QNetworkProxy> proxyList = QNetworkProxyFactory::systemProxyForQuery(QNetworkProxyQuery(url));
-        QNetworkProxy proxy = proxyList.front();
-        m_accessManager.setProxy(proxy);
+
+        // proxy was set in the dedicated method
+        // not needed here.
+
         m_accessManager.get(request);
     }
 
@@ -79,6 +80,7 @@ public slots:
         QSslConfiguration config = QSslConfiguration::defaultConfiguration();
         config.setProtocol(QSsl::AnyProtocol);
         request.setSslConfiguration(config);
+
         m_reply = m_accessManager.get(request);
         connect(m_reply,SIGNAL(downloadProgress(qint64,qint64)),this,SIGNAL(downloadProgress(qint64,qint64)));
         connect(m_reply,SIGNAL(finished()),this,SLOT(extractInstaller()));
@@ -127,13 +129,33 @@ public slots:
         if (!m_baseUrl.isEmpty())
             m_baseUrlSet = true;
     }
+
     void setPlatform(Platform platform)
     {
         m_platform = platform;
     }
+
     void setProtocol(Protocol protocol)
     {
         m_protocol = protocol;
+    }
+
+    void setSystemProxySetting()
+    {
+        QString urlString = getProtocolString() + "://" + m_baseUrl;
+        QUrl url(urlString);
+        QList<QNetworkProxy> proxyList = QNetworkProxyFactory::systemProxyForQuery(QNetworkProxyQuery(url));
+        QNetworkProxy proxy;
+        foreach(QNetworkProxy p, proxyList)
+        {
+            if (!p.hostName().isEmpty())
+            {
+                // assign the first non-empty one seems simple enough
+                proxy = p;
+                break;
+            }
+        }
+        m_accessManager.setProxy(proxy);
     }
 
 private slots:

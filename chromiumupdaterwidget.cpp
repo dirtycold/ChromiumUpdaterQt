@@ -68,6 +68,10 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
     m_updater.setPlatform(ChromiumUpdater::Win32);
     m_updater.setProtocol(ChromiumUpdater::Https);
 
+    // after setting those parameters to Updater class
+    // call setSystemProxySetting()
+    m_updater.setSystemProxySetting();
+
     connect(m_checkButton,SIGNAL(clicked()),this,SLOT(checkClicked()));
     connect(&m_updater,SIGNAL(versionQueried()),this,SLOT(versionQueried()));
     connect(m_downloadButton,SIGNAL(clicked()),this,SLOT(downloadClicked()));
