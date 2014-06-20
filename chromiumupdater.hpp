@@ -17,6 +17,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QProcess>
+#include <QNetworkProxyFactory>
 
 class ChromiumUpdater : public QObject
 {
@@ -63,6 +64,9 @@ public slots:
         QSslConfiguration config = QSslConfiguration::defaultConfiguration();
         config.setProtocol(QSsl::AnyProtocol);
         request.setSslConfiguration(config);
+        QList<QNetworkProxy> proxyList = QNetworkProxyFactory::systemProxyForQuery(QNetworkProxyQuery(url));
+        QNetworkProxy proxy = proxyList.front();
+        m_accessManager.setProxy(proxy);
         m_accessManager.get(request);
     }
 
