@@ -65,7 +65,14 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
     m_baseUrl = m_setting->value("BaseUrl").toString();
     m_updater.setBaseUrl(m_baseUrl);
 
-    m_updater.setPlatform(ChromiumUpdater::Win32);
+    // better use QMetaEnum?
+    ChromiumUpdater::Platform p;
+    if (m_setting->value("Platform").toString() == "Win32")
+        p = ChromiumUpdater::Win32;
+    else if(m_setting->value("Platform").toString() == "Win64")
+        p = ChromiumUpdater::Win64;
+    m_updater.setPlatform(p);
+
     m_updater.setProtocol(ChromiumUpdater::Https);
 
     // after setting those parameters to Updater class
