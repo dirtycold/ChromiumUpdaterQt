@@ -11,3 +11,8 @@
 *.lai
 *.la
 *.a
+
+# user-defined
+build
+*.pro.user
+
