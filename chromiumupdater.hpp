@@ -28,6 +28,7 @@ public:
     {
         m_versionQueried = false;
         m_baseUrlSet = false;
+        m_platform = Win32;
         connect(&m_installer,SIGNAL(finished(int)),this,SIGNAL(installComplete(int)));
     }
 
