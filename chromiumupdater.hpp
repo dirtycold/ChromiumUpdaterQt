@@ -26,9 +26,11 @@ public:
     explicit ChromiumUpdater(QObject *parent = 0)
         :QObject(parent)
     {
-        m_versionQueried = false;
-        m_baseUrlSet = false;
+        m_version = 0;
+        m_baseUrl = "";
         m_platform = Win32;
+        m_protocol = HTTPS;
+        m_installerDownloaded = false;
         connect(&m_installer,SIGNAL(finished(int)),this,SIGNAL(installComplete(int)));
     }
 
@@ -56,7 +58,7 @@ public slots:
 
     void queryVersion()
     {
-        if (!m_baseUrlSet)
+        if (m_baseUrl.isEmpty())
             return;
         connect(&m_accessManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(extractVersion(QNetworkReply*)));
         QString urlString = getProtocolString() + "://" + m_baseUrl + "/" + getPlatformString() + "/" + "LAST_CHANGE";
@@ -89,7 +91,7 @@ public slots:
 
     void install()
     {
-        if ((m_baseUrlSet && m_versionQueried) && m_installerDownloaded)
+        if (!m_baseUrl.isEmpty() && (m_version != 0) && m_installerDownloaded)
         {
             m_installer.start(m_filepath);
         }
@@ -97,7 +99,7 @@ public slots:
 
     bool hasVersionQueried()
     {
-        return m_versionQueried;
+        return m_version != 0;
     }
 
     unsigned int version()
@@ -127,8 +129,6 @@ public slots:
     void setBaseUrl(QString baseUrl)
     {
         m_baseUrl = baseUrl;
-        if (!m_baseUrl.isEmpty())
-            m_baseUrlSet = true;
     }
 
     void setPlatform(Platform platform)
@@ -170,8 +170,8 @@ private slots:
         QByteArray rawData = reply->readAll();
         unsigned int version = rawData.toUInt();
         reply->deleteLater();
-        m_version = version;
-        m_versionQueried = true;
+        if (version != 0)
+            m_version = version;
 
         //determine installer file name and path
         QFile file("chromium_"+ QString::number(version) + "_" + getPlatformString() + "_mini_installer" + ".exe");
@@ -235,8 +235,6 @@ private:
     Protocol m_protocol;
 
     unsigned int m_version;
-    bool m_versionQueried;
-    bool m_baseUrlSet;
     bool m_installerDownloaded;
     QString m_filepath;
     QString m_url;
