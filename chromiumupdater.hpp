@@ -174,7 +174,7 @@ private slots:
         m_versionQueried = true;
 
         //determine installer file name and path
-        QFile file("chromium_mini_installer_"+ QString::number(version) + ".exe");
+        QFile file("chromium_"+ QString::number(version) + "_" + getPlatformString() + "_mini_installer" + ".exe");
         QFileInfo fileinfo(file);
         m_filepath = fileinfo.absoluteFilePath();
         m_url = getProtocolString() + "://" + m_baseUrl + "/" + getPlatformString() + "/" + QString::number(version) + "/" + "mini_installer.exe";
