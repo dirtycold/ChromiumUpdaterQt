@@ -226,17 +226,26 @@ void ChromiumUpdaterWidget::install()
 
 void ChromiumUpdaterWidget::installComplete(int code)
 {
-    if (code == 0)
+    //common behaviour
+    m_checkButton->setEnabled(true);
+
+    if (code == 0) // installer finished ok
     {
-        m_checkButton->setEnabled(true);
         m_downloadButton->setEnabled(true);
-        //assume installation ok.
         m_statusBar->setFormat("Installation complete.");
         m_statusBar->setRange(0,100);
         m_statusBar->setValue(100);
         m_setting->setValue("Version",m_updater.version());
         if (m_autoRemove)
             m_updater.removeInstaller();
+    }
+    else // not ok
+    {
+        m_downloadButton->setEnabled(false);
+        m_statusBar->setFormat("Installation failed.");
+        m_statusBar->setRange(0,100);
+        m_statusBar->setValue(0);
+        m_updater.removeInstaller();
     }
 }
 
