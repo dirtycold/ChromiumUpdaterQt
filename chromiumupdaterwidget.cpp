@@ -60,18 +60,21 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
     if (!m_setting->contains("Platform"))
         m_setting->setValue("Platform","Win32");
     if (!m_setting->contains("Protocol"))
-        m_setting->setValue("Protocol","Https");
+        m_setting->setValue("Protocol","HTTPS");
 
     m_baseUrl = m_setting->value("BaseUrl").toString();
     m_updater.setBaseUrl(m_baseUrl);
 
     // better use QMetaEnum?
-    ChromiumUpdater::Platform p = ChromiumUpdater::Win32;
+    ChromiumUpdater::Platform platform = ChromiumUpdater::Win32;
     if(m_setting->value("Platform").toString() == "Win64")
-        p = ChromiumUpdater::Win64;
-    m_updater.setPlatform(p);
+        platform = ChromiumUpdater::Win64;
+    m_updater.setPlatform(platform);
 
-    m_updater.setProtocol(ChromiumUpdater::Https);
+    ChromiumUpdater::Protocol protocol = ChromiumUpdater::HTTPS;
+    if (m_setting->value("Protocol").toString().toUpper() == "HTTP")
+        protocol = ChromiumUpdater::HTTP;
+    m_updater.setProtocol(protocol);
 
     // after setting those parameters to Updater class
     // call setSystemProxySetting()

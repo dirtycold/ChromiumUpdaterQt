@@ -39,7 +39,7 @@ public:
     }
 
     enum Platform{ Win32, Win64};
-    enum Protocol{ Http, Https};
+    enum Protocol{ HTTP, HTTPS};
 
 signals:
     void versionQueried();
@@ -211,10 +211,10 @@ private slots:
         QString protocolString;
         switch (m_protocol) {
         default:
-        case Https:
+        case HTTPS:
             protocolString = "https";
             break;
-        case Http:
+        case HTTP:
             protocolString = "http";
             break;
         }
