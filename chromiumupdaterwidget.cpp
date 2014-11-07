@@ -61,9 +61,18 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
         m_setting->setValue("Platform","Win32");
     if (!m_setting->contains("Protocol"))
         m_setting->setValue("Protocol","HTTPS");
+    if (!m_setting->contains("AutoCheck"))
+        m_setting->setValue("AutoCheck",true);
+    if (!m_setting->contains("AutoDownload"))
+        m_setting->setValue("AutoDownload",false);
+    if (!m_setting->contains("AutoRemove"))
+        m_setting->setValue("AutoRemove",false);
 
     m_baseUrl = m_setting->value("BaseUrl").toString();
     m_updater.setBaseUrl(m_baseUrl);
+    m_autoCheck = m_setting->value("AutoCheck").toBool();
+    m_autoDownload = m_setting->value("AutoDownload").toBool();
+    m_autoRemove = m_setting->value("AutoRemove").toBool();
 
     // better use QMetaEnum?
     ChromiumUpdater::Platform platform = ChromiumUpdater::Win32;
@@ -88,6 +97,16 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
     connect(&m_updater,SIGNAL(installComplete(int)),this,SLOT(installComplete(int)));
     connect(this,SIGNAL(readyToInstall()),this,SLOT(install()));
     connect(m_urlButton,SIGNAL(clicked()),this,SLOT(copyUrl()));
+
+    if (m_autoCheck)
+    {
+        m_checkButton->setVisible(false);
+        emit checkClicked();
+    }
+    if (m_autoDownload)
+    {
+        m_downloadButton->setVisible(false);
+    }
 }
 
 ChromiumUpdaterWidget::~ChromiumUpdaterWidget()
@@ -150,6 +169,8 @@ void ChromiumUpdaterWidget::versionQueried()
         }
 
         m_urlButton->setEnabled(true);
+        if (m_autoDownload)
+            emit downloadClicked();
     }
     else
     {
@@ -214,6 +235,8 @@ void ChromiumUpdaterWidget::installComplete(int code)
         m_statusBar->setRange(0,100);
         m_statusBar->setValue(100);
         m_setting->setValue("Version",m_updater.version());
+        if (m_autoRemove)
+            m_updater.removeInstaller();
     }
 }
 

@@ -44,6 +44,9 @@ private:
 
     QSettings *m_setting;
     QString m_baseUrl;
+    bool m_autoCheck;
+    bool m_autoDownload;
+    bool m_autoRemove;
 
 };
 

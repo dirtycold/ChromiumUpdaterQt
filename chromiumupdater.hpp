@@ -159,6 +159,11 @@ public slots:
         m_accessManager.setProxy(proxy);
     }
 
+    bool removeInstaller()
+    {
+        return QFile::remove(m_filepath);
+    }
+
 private slots:
     void extractVersion(QNetworkReply *reply)
     {
