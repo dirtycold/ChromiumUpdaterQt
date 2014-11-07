@@ -16,38 +16,42 @@
 ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
     QWidget(parent)
 {    
-    QHBoxLayout *hLayout = new QHBoxLayout();
-    QVBoxLayout *vLayout = new QVBoxLayout(this);
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    QGridLayout *mainLayout = new QGridLayout(this);
 
     m_checkButton = new QPushButton("Check Version",this);
-    m_downloadButton = new QPushButton ("Download and Install",this);
-    m_urlButton = new QPushButton("",this);
-    m_downloadButton->setEnabled(false);
-    m_urlButton->setEnabled(false);
+    m_checkButton->setEnabled(true);
     m_checkButton->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));
-    m_downloadButton->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogApplyButton)));
-    m_urlButton->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogSaveButton)));
     m_checkButton->setToolTip("Check for new version");
+
+    m_downloadButton = new QPushButton ("Download and Install",this);
+    m_downloadButton->setEnabled(false);
+    m_downloadButton->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogApplyButton)));
     m_downloadButton->setToolTip("Download and install");
+
+    buttonLayout->addWidget(m_checkButton);
+    buttonLayout->addWidget(m_downloadButton);
+
+    m_urlButton = new QPushButton("",this);
+    m_urlButton->setEnabled(false);
+    m_urlButton->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogSaveButton)));
     m_urlButton->setToolTip("Copy source url");
     m_urlButton->setFixedWidth(24);
-
-    hLayout->addWidget(m_checkButton);
-    hLayout->addWidget(m_downloadButton);
-    hLayout->addWidget(m_urlButton);
 
     m_statusBar = new QProgressBar(this);
     m_statusBar->setAlignment(Qt::AlignCenter);
     m_statusBar->setFormat("Ready");
     m_statusBar->setValue(0);
+    m_statusBar->setMinimumWidth(240);
 
     QLabel *label = new QLabel(this);
     label->setMaximumHeight(20);
     label->setText("A Chromium Updater written in Qt. (c)2014 ZH");
 
-    vLayout->insertLayout(0,hLayout);
-    vLayout->insertWidget(1,m_statusBar);
-    vLayout->insertWidget(2,label);
+    mainLayout->addWidget(m_statusBar,0,0);
+    mainLayout->addWidget(m_urlButton,0,1);
+    mainLayout->addLayout(buttonLayout,1,0);
+    mainLayout->addWidget(label,2,0);
 
     if (!m_updater.supportsSsl())
         m_statusBar->setFormat("SSL-support missing. HTTPS connection not possible.");
