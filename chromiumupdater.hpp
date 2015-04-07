@@ -30,7 +30,6 @@ public:
         m_baseUrl = "";
         m_platform = Win32;
         m_protocol = HTTPS;
-        m_installerDownloaded = false;
         connect(&m_installer,SIGNAL(finished(int)),this,SIGNAL(installComplete(int)));
     }
 
@@ -91,7 +90,7 @@ public slots:
 
     void install()
     {
-        if (!m_baseUrl.isEmpty() && (m_version != 0) && m_installerDownloaded)
+        if (!m_baseUrl.isEmpty() && (m_version > 0) && installerExists())
         {
             m_installer.start(m_filepath);
         }
@@ -193,7 +192,6 @@ private slots:
         disconnect(m_reply,SIGNAL(downloadProgress(qint64,qint64)),this,SIGNAL(downloadProgress(qint64,qint64)));
         disconnect(m_reply,SIGNAL(finished()),this,SLOT(extractInstaller()));
         emit installerDownloaded();
-        m_installerDownloaded = true;
     }
 
     QString getPlatformString()
@@ -235,7 +233,6 @@ private:
     Protocol m_protocol;
 
     unsigned int m_version;
-    bool m_installerDownloaded;
     QString m_filepath;
     QString m_url;
 };
