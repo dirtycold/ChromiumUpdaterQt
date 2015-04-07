@@ -1,7 +1,7 @@
 
 /*
   ChromiumUpdaterQt - A Chromium Updater written in Qt.
-  Copyright (c) 2014 ZH (zhanghan@gmx.cn)
+  Copyright (c)2014 - 2015 ZH (zhanghan@gmx.cn)
 */
 
 #include "chromiumupdaterwidget.h"
@@ -46,7 +46,7 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
 
     QLabel *label = new QLabel(this);
     label->setMaximumHeight(20);
-    label->setText("A Chromium Updater written in Qt. (c)2014 ZH");
+    label->setText("A Chromium Updater written in Qt. (c)2014 - 2015 ZH");
 
     mainLayout->addWidget(m_statusBar,0,0);
     mainLayout->addWidget(m_urlButton,0,1);
