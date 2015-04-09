@@ -71,12 +71,15 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
         m_setting->setValue("AutoDownload",false);
     if (!m_setting->contains("AutoRemove"))
         m_setting->setValue("AutoRemove",false);
+    if (!m_setting->contains("UseSystemProxy"))
+        m_setting->setValue("UseSystemProxy",true);
 
     m_baseUrl = m_setting->value("BaseUrl").toString();
     m_updater.setBaseUrl(m_baseUrl);
     m_autoCheck = m_setting->value("AutoCheck").toBool();
     m_autoDownload = m_setting->value("AutoDownload").toBool();
     m_autoRemove = m_setting->value("AutoRemove").toBool();
+    m_useSystemProxy = m_setting->value("UseSystemProxy").toBool();
 
     // better use QMetaEnum?
     ChromiumUpdater::Platform platform = ChromiumUpdater::Win32;
@@ -91,7 +94,8 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
 
     // after setting those parameters to Updater class
     // call setSystemProxySetting()
-    m_updater.setSystemProxySetting();
+    if (m_useSystemProxy)
+        m_updater.setSystemProxySetting();
 
     connect(m_checkButton,SIGNAL(clicked()),this,SLOT(checkClicked()));
     connect(&m_updater,SIGNAL(versionQueried()),this,SLOT(versionQueried()));

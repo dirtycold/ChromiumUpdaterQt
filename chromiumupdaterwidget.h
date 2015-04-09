@@ -47,6 +47,7 @@ private:
     bool m_autoCheck;
     bool m_autoDownload;
     bool m_autoRemove;
+    bool m_useSystemProxy;
 
 };
 
