@@ -1,7 +1,7 @@
 
 /*
   ChromiumUpdaterQt - A Chromium Updater written in Qt.
-  Copyright (c) 2014 ZH (zhanghan@gmx.cn)
+  Copyright (c)2014 - 2015 ZH (zhanghan@gmx.cn)
 */
 
 #ifndef CHROMIUMUPDATER_H
