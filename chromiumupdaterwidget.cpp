@@ -73,6 +73,19 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
         m_setting->setValue("AutoRemove",false);
     if (!m_setting->contains("UseSystemProxy"))
         m_setting->setValue("UseSystemProxy",true);
+    if (!m_setting->contains("UseManualProxy"))
+        m_setting->setValue("UseManualProxy",true);
+    if (!m_setting->contains("ManualProxyType"))
+        m_setting->setValue("ManualProxyType","HTTP");
+    if (!m_setting->contains("ManualProxyHost"))
+        m_setting->setValue("ManualProxyHost","");
+    if (!m_setting->contains("ManualProxyPort"))
+        m_setting->setValue("ManualProxyPort",0);
+    if (!m_setting->contains("ManualProxyUsername"))
+        m_setting->setValue("ManualProxyUsername","");
+    if (!m_setting->contains("ManualProxyPassword"))
+        m_setting->setValue("ManualProxyPassword","");
+
 
     m_baseUrl = m_setting->value("BaseUrl").toString();
     m_updater.setBaseUrl(m_baseUrl);
@@ -80,6 +93,12 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
     m_autoDownload = m_setting->value("AutoDownload").toBool();
     m_autoRemove = m_setting->value("AutoRemove").toBool();
     m_useSystemProxy = m_setting->value("UseSystemProxy").toBool();
+    m_useManualProxy = m_setting->value("UseManualProxy").toBool();
+    m_manualProxyType = m_setting->value("ManualProxyType").toString();
+    m_manualProxyHost = m_setting->value("ManualProxyHost").toString();
+    m_manualProxyPort = m_setting->value("ManualProxyPort").toInt();
+    m_manualProxyUsername = m_setting->value("ManualProxyUsername").toString();
+    m_manualProxyPassword = m_setting->value("ManualProxyPassword").toString();
 
     // better use QMetaEnum?
     ChromiumUpdater::Platform platform = ChromiumUpdater::Win32;
@@ -94,8 +113,15 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
 
     // after setting those parameters to Updater class
     // call setSystemProxySetting()
-    if (m_useSystemProxy)
+    if (m_useSystemProxy && !m_useManualProxy)
+    {
         m_updater.setSystemProxySetting();
+    }
+    else if (!m_useSystemProxy && m_useManualProxy)
+    {
+        m_updater.setManualProxySetting(m_manualProxyType, m_manualProxyHost, m_manualProxyPort, m_manualProxyUsername, m_manualProxyPassword);
+    }
+    // otherwise will use direct connection.
 
     connect(m_checkButton,SIGNAL(clicked()),this,SLOT(checkClicked()));
     connect(&m_updater,SIGNAL(versionQueried()),this,SLOT(versionQueried()));
