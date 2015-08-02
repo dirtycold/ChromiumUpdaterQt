@@ -74,7 +74,7 @@ ChromiumUpdaterWidget::ChromiumUpdaterWidget(QWidget *parent) :
     if (!m_setting->contains("UseSystemProxy"))
         m_setting->setValue("UseSystemProxy",true);
     if (!m_setting->contains("UseManualProxy"))
-        m_setting->setValue("UseManualProxy",true);
+        m_setting->setValue("UseManualProxy",false);
     if (!m_setting->contains("ManualProxyType"))
         m_setting->setValue("ManualProxyType","HTTP");
     if (!m_setting->contains("ManualProxyHost"))
