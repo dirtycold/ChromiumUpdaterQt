@@ -158,6 +158,28 @@ public slots:
         m_accessManager.setProxy(proxy);
     }
 
+    void setManualProxySetting(const QString &type,
+                               const QString &host,
+                               const qint16 port,
+                               const QString &username,
+                               const QString &password)
+    {
+        QNetworkProxy proxy;
+        if (type == "HTTP")
+            proxy.setType(QNetworkProxy::HttpProxy);
+        else if (type == "SOCKS5")
+            proxy.setType(QNetworkProxy::Socks5Proxy);
+        else
+            proxy.setType(QNetworkProxy::DefaultProxy);
+
+        proxy.setHostName(host);
+        proxy.setPort(port);
+        proxy.setUser(username);
+        proxy.setPassword(password);
+
+        m_accessManager.setProxy(proxy);
+    }
+
     bool removeInstaller()
     {
         return QFile::remove(m_filepath);

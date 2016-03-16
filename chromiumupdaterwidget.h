@@ -48,7 +48,12 @@ private:
     bool m_autoDownload;
     bool m_autoRemove;
     bool m_useSystemProxy;
-
+    bool m_useManualProxy;
+    QString m_manualProxyType;
+    QString m_manualProxyHost;
+    qint16 m_manualProxyPort;
+    QString m_manualProxyUsername;
+    QString m_manualProxyPassword;
 };
 
 #endif // CHROMIUMUPDATERWIDGET_H
